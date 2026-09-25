@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>TAI Labs</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23E8B04B' fill-opacity='.8'%3E%3Ccircle cx='16' cy='9' r='6.2'/%3E%3Ccircle cx='23' cy='16' r='6.2'/%3E%3Ccircle cx='16' cy='23' r='6.2'/%3E%3Ccircle cx='9' cy='16' r='6.2'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='4.2' fill='%232F5D50'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4EFE6;
+    --surface: #FBF8F2;
+    --ink: #2A2724;
+    --ink-soft: #6F675E;
+    --line: #E2D8C8;
+    --accent: #2F5D50;
+    --accent-ink: #FBF8F2;
+    --glow: #E8B04B;
+    --halo: rgba(232, 176, 75, .16);
+    --user: #E9E0CF;
+    --err-bg: #F8E6DF;
+    --err-line: #EBC7B9;
+    --err-ink: #7A3522;
+    --shadow: 0 1px 2px rgba(60, 40, 20, .05), 0 12px 32px -16px rgba(60, 40, 20, .25);
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1B1916;
+      --surface: #24211D;
+      --ink: #EEE7DB;
+      --ink-soft: #A89F92;
+      --line: #36312B;
+      --accent: #86BBA6;
+      --accent-ink: #13201B;
+      --halo: rgba(232, 176, 75, .07);
+      --user: #302B25;
+      --err-bg: #3A2520;
+      --err-line: #5A342A;
+      --err-ink: #F2C2B2;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px -16px rgba(0, 0, 0, .6);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(1100px 520px at 50% -12%, var(--halo), transparent 70%), var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app { display: flex; flex-direction: column; height: 100dvh; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font: 600 18px var(--serif); letter-spacing: -.01em; }
+  .brand svg { width: 26px; height: 26px; }
+  .ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-size: 14px; color: var(--ink-soft);
+    transition: background .2s, color .2s, border-color .2s;
+  }
+  .ghost:hover { background: var(--surface); color: var(--ink); }
+  .ghost svg { width: 14px; height: 14px; }
+
+  /* Conversation area */
+  #scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .column { flex: 1 0 auto; width: 100%; max-width: 720px; margin: 0 auto; padding: 24px 16px 32px; display: flex; flex-direction: column; }
+
+  /* Welcome */
+  .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: rise .6s ease both; }
+  .welcome[hidden] { display: none; }
+  .welcome .mark { width: 60px; height: 60px; }
+  .welcome .mark .petals { animation: spin 30s linear infinite; }
+  h1 {
+    font: 400 clamp(2rem, 5.5vw, 2.9rem)/1.15 var(--serif);
+    letter-spacing: -.02em; margin: 20px 0 8px;
+  }
+  h1 em { color: var(--accent); }
+  .welcome p { margin: 0; color: var(--ink-soft); font-size: 17px; }
+  .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 580px; margin-top: 36px; }
+  .chip {
+    text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; font-size: 14.5px; line-height: 1.45;
+    transition: transform .2s ease, border-color .2s, box-shadow .2s;
+  }
+  .chip span { display: block; font-size: 12.5px; color: var(--ink-soft); margin-bottom: 2px; }
+  .chip:hover { transform: translateY(-2px); border-color: var(--glow); box-shadow: var(--shadow); }
+
+  /* Messages */
+  .msg { margin-bottom: 28px; animation: rise .35s ease both; }
+  .msg.user { display: flex; justify-content: flex-end; }
+  .bubble {
+    background: var(--user); padding: 10px 16px; border-radius: 20px 20px 6px 20px;
+    max-width: 85%; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .msg.bot { display: grid; grid-template-columns: 28px 1fr; gap: 14px; }
+  .avatar svg { width: 28px; height: 28px; margin-top: 2px; }
+  .thinking-state .avatar .petals { animation: spin 2.4s linear infinite; }
+  .answer { min-width: 0; overflow-wrap: anywhere; }
+  .answer > :first-child { margin-top: 0; }
+  .answer p { margin: 0 0 .85em; }
+  .answer h3 { font: 600 1.1rem var(--serif); margin: 1.2em 0 .4em; }
+  .answer ul, .answer ol { margin: 0 0 .85em; padding-left: 1.4em; }
+  .answer li { margin: .2em 0; }
+  .answer li::marker { color: var(--accent); }
+  .answer code { font: .88em var(--mono); background: var(--user); padding: 1px 6px; border-radius: 6px; }
+  .answer pre {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 .85em;
+  }
+  .answer pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.55; }
+  .thinking {
+    display: inline-block; padding-top: 2px;
+    background: linear-gradient(90deg, var(--ink-soft) 0%, var(--ink) 50%, var(--ink-soft) 100%) 0 0 / 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 1.6s linear infinite;
+  }
+  .actions { margin-top: 4px; }
+  .copy {
+    background: none; border: 0; padding: 4px 8px; margin-left: -8px; border-radius: 8px;
+    font-size: 13px; color: var(--ink-soft); transition: background .2s, color .2s;
+  }
+  .copy:hover { background: var(--user); color: var(--ink); }
+  .error {
+    background: var(--err-bg); border: 1px solid var(--err-line); color: var(--err-ink);
+    border-radius: 12px; padding: 12px 16px; font-size: 15px;
+  }
+
+  /* Composer */
+  footer { padding: 0 16px 14px; }
+  .composer {
+    max-width: 720px; margin: 0 auto;
+    display: flex; align-items: flex-end; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 24px;
+    padding: 10px 10px 10px 20px; box-shadow: var(--shadow);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .composer:focus-within { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  textarea {
+    flex: 1; border: 0; outline: none; background: transparent; resize: none;
+    font: 16px/1.5 var(--sans); color: var(--ink); padding: 7px 0; max-height: 200px;
+  }
+  textarea::placeholder { color: var(--ink-soft); }
+  .send {
+    flex: none; width: 38px; height: 38px; border-radius: 50%; border: 0;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink);
+    transition: transform .15s ease, opacity .2s;
+  }
+  .send:not(:disabled):hover { transform: scale(1.06); }
+  .send:disabled { opacity: .35; cursor: default; }
+  .send svg { width: 18px; height: 18px; }
+  .hint { text-align: center; font-size: 12.5px; color: var(--ink-soft); margin: 10px 0 0; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .petals { transform-box: view-box; transform-origin: 16px 16px; }
+
+  @media (max-width: 560px) {
+    header { padding: 12px 16px; }
+    .chips { grid-template-columns: 1fr; }
+    .chip:nth-child(n+3) { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><span class="logo"></span>TAI Labs</div>
+    <button class="ghost" id="new" type="button" hidden>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+      New chat
+    </button>
+  </header>
+
+  <main id="scroll">
+    <div class="column" id="column">
+      <section class="welcome" id="welcome">
+        <span class="logo mark"></span>
+        <h1><span id="greeting">Hello</span>, <em>friend</em>.</h1>
+        <p>Ask anything. I'm happy to help you think it through.</p>
+        <div class="chips">
+          <button class="chip" type="button"><span>Learn</span>Explain how an API works, like I'm new to coding</button>
+          <button class="chip" type="button"><span>Create</span>Give me three ideas for a cozy weekend project</button>
+          <button class="chip" type="button"><span>Summarize</span>Tell the history of the internet in five sentences</button>
+          <button class="chip" type="button"><span>Write</span>Help me write a friendly follow-up email</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <form class="composer" id="composer">
+      <textarea id="input" rows="1" placeholder="Ask anything…" aria-label="Your question" autofocus></textarea>
+      <button class="send" id="send" type="submit" aria-label="Send" disabled>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5"/></svg>
+      </button>
+    </form>
+    <p class="hint">Enter to send, Shift+Enter for a new line · Each question is answered on its own · Answers can contain mistakes</p>
+  </footer>
+</div>
+
+<script>
+  const LOGO = '<svg viewBox="0 0 32 32" aria-hidden="true"><g class="petals" fill="var(--glow)" fill-opacity=".8">' +
+    '<circle cx="16" cy="9" r="6.2"/><circle cx="23" cy="16" r="6.2"/><circle cx="16" cy="23" r="6.2"/><circle cx="9" cy="16" r="6.2"/>' +
+    '</g><circle cx="16" cy="16" r="4.2" fill="var(--accent)"/></svg>';
+
+  const $ = (s) => document.querySelector(s);
+  const scroll = $("#scroll"), column = $("#column"), welcome = $("#welcome");
+  const form = $("#composer"), input = $("#input"), send = $("#send"), newBtn = $("#new");
+  let busy = false;
+
+  document.querySelectorAll(".logo").forEach((el) => (el.innerHTML = LOGO));
+
+  const h = new Date().getHours();
+  $("#greeting").textContent =
+    h < 5 ? "Still up" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+
+  // Composer behaviour
+  function autosize() {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 200) + "px";
+  }
+  function update() {
+    send.disabled = busy || !input.value.trim();
+  }
+  input.addEventListener("input", () => { autosize(); update(); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ask(input.value.trim());
+  });
+
+  // Suggestions fill the composer (no API call until you press send)
+  document.querySelectorAll(".chip").forEach((chip) =>
+    chip.addEventListener("click", () => {
+      input.value = chip.lastChild.textContent.trim();
+      autosize(); update(); input.focus();
+    })
+  );
+
+  newBtn.addEventListener("click", () => {
+    column.querySelectorAll(".msg").forEach((m) => m.remove());
+    welcome.hidden = false;
+    newBtn.hidden = true;
+    input.focus();
+  });
+
+  function add(html, cls) {
+    const el = document.createElement("div");
+    el.className = "msg " + cls;
+    el.innerHTML = html;
+    column.appendChild(el);
+    toBottom();
+    return el;
+  }
+  function toBottom() {
+    requestAnimationFrame(() => scroll.scrollTo({ top: scroll.scrollHeight, behavior: "smooth" }));
+  }
+
+  async function ask(question) {
+    if (!question || busy) return;
+    busy = true;
+    welcome.hidden = true;
+    newBtn.hidden = false;
+
+    add('<div class="bubble"></div>', "user").firstChild.textContent = question;
+    input.value = "";
+    autosize(); update();
+
+    const bot = add(`<div class="avatar">${LOGO}</div><div class="answer"><span class="thinking">Thinking…</span></div>`, "bot thinking-state");
+    const out = bot.querySelector(".answer");
+
+    try {
+      const res = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(friendly(res.status, data.detail));
+
+      const answer = data.answer || "(The model returned an empty answer.)";
+      out.innerHTML = render(answer) + '<div class="actions"><button class="copy" type="button">Copy</button></div>';
+      const copy = out.querySelector(".copy");
+      copy.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(answer); copy.textContent = "Copied"; }
+        catch { copy.textContent = "Couldn't copy"; }
+        setTimeout(() => (copy.textContent = "Copy"), 1500);
+      });
+    } catch (err) {
+      const msg = err instanceof TypeError
+        ? "I can't reach the server. Make sure uvicorn is still running."
+        : err.message;
+      out.innerHTML = '<div class="error"></div>';
+      out.firstChild.textContent = msg;
+    } finally {
+      bot.classList.remove("thinking-state");
+      busy = false;
+      update();
+      toBottom();
+      input.focus();
+    }
+  }
+
+  function friendly(status, detail) {
+    const d = typeof detail === "string" ? detail : "";
+    if (/insufficient_quota|credit/i.test(d))
+      return "The OpenAI account is out of credits. Add some in your OpenAI billing settings, then try again.";
+    if (/api.?key|credentials|401/i.test(d))
+      return "The OpenAI key is missing or invalid. Check OPENAI_API_KEY in your .env file, then restart the server.";
+    if (/model/i.test(d) && /not exist|not found|access/i.test(d))
+      return "The model set in OPENAI_MODEL isn't available for this key.";
+    if (status === 422) return "That question couldn't be sent. Try rephrasing it.";
+    return d ? "Something went wrong: " + d : `Something went wrong (error ${status}).`;
+  }
+
+  // Tiny, safe Markdown renderer: code blocks, headings, lists, bold, italic, inline code
+  function esc(s) {
+    return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function inline(s) {
+    return esc(s)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+  }
+  function blocks(text) {
+    let html = "", para = [], list = null, type = "";
+    const flushP = () => { if (para.length) { html += "<p>" + para.map(inline).join("<br>") + "</p>"; para = []; } };
+    const flushL = () => { if (list) { html += `<${type}>` + list.map((x) => "<li>" + inline(x) + "</li>").join("") + `</${type}>`; list = null; } };
+    for (const line of text.split("\n")) {
+      if (!line.trim()) { flushP(); continue; }
+      const head = line.match(/^#{1,4}\s+(.*)/);
+      const ul = line.match(/^\s*[-*•]\s+(.*)/);
+      const ol = line.match(/^\s*\d+[.)]\s+(.*)/);
+      if (head) { flushP(); flushL(); html += "<h3>" + inline(head[1]) + "</h3>"; continue; }
+      if (ul || ol) {
+        const t = ul ? "ul" : "ol";
+        flushP();
+        if (list && type !== t) flushL();
+        if (!list) { list = []; type = t; }
+        list.push((ul || ol)[1]);
+        continue;
+      }
+      flushL();
+      para.push(line);
+    }
+    flushP(); flushL();
+    return html;
+  }
+  function render(md) {
+    return md
+      .split(/```[^\n]*\n?([\s\S]*?)```/g)
+      .map((part, i) => (i % 2 ? "<pre><code>" + esc(part.replace(/\n$/, "")) + "</code></pre>" : blocks(part)))
+      .join("");
+  }
+</script>
+</body>
+</html>
