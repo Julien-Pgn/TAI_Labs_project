@@ -1,0 +1,19 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec).
+# In Render: New > Blueprint > pick this repo > paste your OpenAI key when asked.
+# Python version comes from .python-version.
+services:
+  - type: web
+    name: tai-labs-ask
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false # secret: typed in the Render dashboard, never stored in the repo
+      - key: OPENAI_MODEL
+        value: gpt-4.1-nano
+      - key: DAILY_REQUEST_LIMIT
+        value: "200"

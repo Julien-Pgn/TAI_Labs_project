@@ -1,0 +1,13 @@
+[theme]
+base = "light"
+primaryColor = "#2F5D50"
+backgroundColor = "#F4EFE6"
+secondaryBackgroundColor = "#EAE2D3"
+textColor = "#2A2724"
+
+[server]
+headless = true
+address = "localhost" # only reachable from this computer
+
+[browser]
+gatherUsageStats = false

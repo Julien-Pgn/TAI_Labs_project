@@ -129,7 +129,8 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
     animation: shimmer 1.6s linear infinite;
   }
-  .actions { margin-top: 4px; }
+  .actions { margin-top: 4px; display: flex; align-items: center; gap: 12px; }
+  .meta { font-size: 12.5px; color: var(--ink-soft); }
   .copy {
     background: none; border: 0; padding: 4px 8px; margin-left: -8px; border-radius: 8px;
     font-size: 13px; color: var(--ink-soft); transition: background .2s, color .2s;
@@ -303,8 +304,10 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(friendly(res.status, data.detail));
 
-      const answer = data.answer || "(The model returned an empty answer.)";
-      out.innerHTML = render(answer) + '<div class="actions"><button class="copy" type="button">Copy</button></div>';
+      const answer = data.answer?.answer || "(The model returned an empty answer.)";
+      out.innerHTML = render(answer) + '<div class="actions"><button class="copy" type="button">Copy</button><span class="meta"></span></div>';
+      out.querySelector(".meta").textContent =
+        `${data.model} · ${data.tokens_used} tokens · $${Number(data.cost_usd).toFixed(6)} · ${(data.latency_ms / 1000).toFixed(1)} s`;
       const copy = out.querySelector(".copy");
       copy.addEventListener("click", async () => {
         try { await navigator.clipboard.writeText(answer); copy.textContent = "Copied"; }
@@ -327,7 +330,8 @@
   }
 
   function friendly(status, detail) {
-    const d = typeof detail === "string" ? detail : "";
+    const d = typeof detail === "string" ? detail : detail?.message || "";
+    if (status === 429) return "This demo's daily question limit is reached. Try again tomorrow.";
     if (/insufficient_quota|credit/i.test(d))
       return "The OpenAI account is out of credits. Add some in your OpenAI billing settings, then try again.";
     if (/api.?key|credentials|401/i.test(d))

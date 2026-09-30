@@ -1,0 +1,5 @@
+# Local tools: the API's packages plus the Streamlit UI and tests.
+-r requirements.txt
+streamlit==1.64.0
+requests==2.34.2
+pytest==9.1.1
