@@ -29,9 +29,9 @@ Bootcamp **Week 1 assignment: "Ship your first AI endpoint"**. A typed FastAPI `
 - API rebuilt to the class format: `POST /ask` (structured answer + guardrail + retry + `force_bad` + tokens/cost/latency), `GET /health`, `GET /docs`, chat page at `GET /`.
 - Streamlit UI (`streamlit_app.py`), tests (`test_main.py`, 10 passing, OpenAI faked) and Render blueprint (`render.yaml`) are ready.
 - **User added OpenAI credits.** The first real call succeeded locally: gpt-4.1-nano, 150 tokens, $0.0000285, 2.4 s, guardrail passed on attempt 1.
-- User set up Render, but the service can't get the new code until the push works (see Session log: SSH passphrase).
+- User set up a Render service. Not yet checked whether it runs the pushed commit.
 - Local `.env` now uses `OPENAI_MODEL=gpt-4.1-nano`.
-- The 2026-09-30 work is committed locally but **not pushed yet**: SSH push fails until the user unlocks their key once.
+- The 2026-09-30 work is **pushed** (`dc067dc` on GitHub `main`). Render should redeploy from it.
 
 ## Stack
 - **Python 3.12** (`.python-version`; managed by `uv`, same version on Render). The venv in `.venv/` was created with `uv venv --seed`.
@@ -97,7 +97,7 @@ Fresh setup: `uv venv && uv pip install -r requirements-dev.txt && cp .env.examp
 ## Open items / next steps
 - [x] **User:** add OpenAI credits. Still to confirm: auto-recharge OFF, a budget ($5–10) with an email alert, and a screenshot of the settings.
 - [x] Commit the 2026-09-30 work.
-- [ ] **User:** run `ssh-add --apple-use-keychain ~/.ssh/id_ed25519` once (types the passphrase), then push.
+- [x] Push `dc067dc`.
 - [ ] Check how the Render service was created (Blueprint or manual Web Service) and that it redeploys the pushed commit.
 - [ ] **User:** Render → New → Blueprint → this repo → paste `OPENAI_API_KEY` → deploy. Check `/health`.
 - [ ] Live proof: `curl` the Render `/ask` and screenshot it; take the Streamlit screenshot; do the `force_bad` demo.
@@ -142,9 +142,7 @@ Fresh setup: `uv venv && uv pip install -r requirements-dev.txt && cp .env.examp
 - Checked the pending commit: 14 files, no secret, no live URL. **The user chose not to commit yet** (they want to review first). Next: user reviews → commit + push → credits → Render.
 
 ### 2026-09-30 — Session 3
-- User added OpenAI credits and set up something on Render, but `git push` failed.
-- Diagnosis: the files were **staged but never committed**, and SSH failed with `Permission denied (publickey)`. The key `~/.ssh/id_ed25519` is registered on GitHub (as "M5") but has a passphrase, the SSH agent was empty after a restart, and the passphrase was not in the macOS Keychain. Git over SSH can't prompt from VS Code's push button.
-- Fix: added a `Host github.com` block to `~/.ssh/config` (`IdentityFile ~/.ssh/id_ed25519`, `AddKeysToAgent yes`, `UseKeychain yes`; backup in `~/.ssh/config.bak`). The user must run `ssh-add --apple-use-keychain ~/.ssh/id_ed25519` once and type the passphrase; after that, the Keychain remembers it. Fallback if the passphrase is forgotten: switch to HTTPS with `gh auth setup-git` + an HTTPS remote.
+- User added OpenAI credits and set up a Render service.
 - First real OpenAI call (local, in-process): 200, valid structured answer, 150 tokens, $0.0000285. README updated with this measured cost.
-- Committed all of today's work locally (see git log).
+- Committed and pushed today's work (`dc067dc`).
 
